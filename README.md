@@ -1,8 +1,8 @@
 # ROS 2 Image Processor - Technical Assessment
 
-This project implements a ROS 2 node that processes dual camera streams from Intel RealSense cameras, performs image stitching, and implements object tracking for humans and vehicles with motion path visualization.
+This project implements a ROS 2 node that processes dual camera streams from Intel RealSense cameras, performs image stitching, and implements semantic segmentation using Mask2Former.
 
-## 🎯 Features
+## Features
 
 - **Dual Camera Stream Processing**: Subscribes to two camera streams (`/realsense/left/color/image_raw_throttle` and `/realsense/right/color/image_raw_throttle`)
 - **Image Stitching**: Creates a panoramic view using homography-based stitching
@@ -11,98 +11,156 @@ This project implements a ROS 2 node that processes dual camera streams from Int
 - **Real-time Processing**: Processes and publishes results at high FPS
 - **Image Saving**: Automatically saves processed and segmented images
 
-## 📋 Prerequisites
+## Prerequisites
 
-- Docker
-- NVIDIA GPU with CUDA support (for GPU version)
-- ROS 2 Humble (if running natively)
-- Python 3.8+
-- PyTorch (with CUDA support for GPU version)
-- OpenCV 4.x
-- NumPy
-- Transformers (Hugging Face)
+### System Requirements
+- **OS**: Ubuntu 20.04 or later (recommended)
+- **RAM**: Minimum 8GB, 16GB recommended
+- **Storage**: At least 10GB free space
+- **GPU**: NVIDIA GPU with CUDA support (for GPU version, optional for CPU)
 
-## 📦 Dataset Download (rosbag2)
+### Software Requirements
+- **Docker**: [Install Docker](https://docs.docker.com/engine/install/ubuntu/)
+- **Docker Compose**: Usually included with Docker
+- **NVIDIA Docker**: [Install NVIDIA Docker](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) (for GPU version)
 
-This project requires a large ROS 2 bag file (~2.5GB) for testing and demonstration. The bag file will be **automatically downloaded** if it is not present when you run `./start_cpu.sh` or `./start_gpu.sh`.
+### Verify Installation
+```bash
+# Check Docker
+docker --version
+docker-compose --version
 
-You can also manually download the bag file using the provided script:
+# Check NVIDIA Docker (for GPU version)
+nvidia-smi
+docker run --rm --gpus all nvidia/cuda:11.0-base nvidia-smi
+```
+
+## Dataset Download
+
+This project requires a large ROS 2 bag file (~2.5GB) for testing and demonstration. The bag file will be automatically downloaded if it is not present when you run the start scripts.
+
+You can also manually download the bag file:
 
 ```bash
+chmod +x download_rosbag.sh
 ./download_rosbag.sh
 ```
 
-- If the `rosbag2_2025_06_16-15_16_29` directory and files already exist, the script will skip the download.
-- The script checks for disk space and required tools (`curl`, `unzip`).
-- If you run the start scripts, they will call this script automatically if needed.
+The script checks for existing files and skips download if already present.
 
-## 🚀 Quick Start with Docker
+## Quick Start
 
-### 1. GPU Version with Docker Compose (Recommended)
+### Option 1: Docker Compose (Recommended)
 
+**GPU Version:**
 ```bash
 docker-compose -f docker-compose-gpu.yml up --build
 ```
 
-### 2. CPU Version with Docker Compose
-
+**CPU Version:**
 ```bash
 docker-compose -f docker-compose-cpu.yml up --build
 ```
 
-### 3. GPU Version with Script
+### Option 2: Start Scripts
+
+**GPU Version (`start_gpu.sh`):**
+- Builds Docker image with CUDA support
+- Downloads rosbag2 file if missing
+- Starts container with GPU access
+- Builds and runs the image processor node
+- Plays the ROS bag file automatically
+- Processes images with semantic segmentation
 
 ```bash
+chmod +x start_gpu.sh
 ./start_gpu.sh
 ```
 
-### 4. CPU Version with Script
+**CPU Version (`start_cpu.sh`):**
+- Builds Docker image without CUDA
+- Downloads rosbag2 file if missing
+- Starts container without GPU access
+- Builds and runs the image processor node
+- Plays the ROS bag file automatically
+- Processes images with semantic segmentation (slower than GPU)
 
 ```bash
+chmod +x start_cpu.sh
 ./start_cpu.sh
 ```
 
-**Note:**
-- The first time you run the start scripts, the required rosbag2 file will be downloaded automatically if missing.
-- You can also run `./download_rosbag.sh` manually to pre-download the dataset.
+### What to Expect
 
-This will:
-- Build the Docker image with appropriate dependencies
-- Launch the ROS 2 container
-- Build and start the image processor node
-- Play the ROS bag file automatically
-- Process images with semantic segmentation
+When you run the scripts, you should see output like:
+```
+Starting ROS 2 Image Processor Test...
+Step 0: Checking for rosbag2 files...
+Rosbag2 files found, proceeding...
+Step 1: Building Docker image...
+Step 2: Cleaning up any existing container...
+Step 3: Starting Docker container...
+Step 4: Building and starting image processor node...
+Step 5: Waiting for node initialization...
+Step 6: Checking node status...
+/image_processor_node
+Step 7: Starting ROS bag playback...
+```
 
-### 3. View the Results
+The process will take several minutes to complete. You'll see logs showing:
+- Image processing progress
+- Segmentation results
+- File saving operations
 
-The processed images with semantic segmentation will be published to the `/processed_image` and `/segmented_image` topics. You can view them using:
+### View Results
 
+The processed images are published to:
+- `/processed_image`: Stitched panoramic image
+- `/segmented_image`: Segmented image with overlays
+
+**Option 1: View in Docker container**
 ```bash
-# In another terminal
+# In a new terminal
+docker exec -it ros2_image_processor bash
+source /opt/ros/humble/setup.bash
+source /ros2_ws/install/setup.bash
 ros2 run rqt_image_view rqt_image_view
 ```
 
-The processed images are also saved to:
+**Option 2: View saved images**
+```bash
+# Check saved images
+ls -la visualization_output/stitched/
+ls -la visualization_output/segmented/
+```
+
+Images are saved to:
 - `visualization_output/stitched/`: Stitched images
 - `visualization_output/segmented/`: Segmented images with overlays
 
-## 🔧 Manual Setup (Without Docker)
+## Manual Setup (Without Docker)
 
-### 1. Install Dependencies
+### Install Dependencies
 
 ```bash
-# Install ROS 2 Humble (if not already installed)
+# Install ROS 2 Humble
+sudo apt update
+sudo apt install software-properties-common
+sudo add-apt-repository universe
+sudo apt update && sudo apt install curl -y
+sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
 sudo apt update
 sudo apt install ros-humble-desktop
 
 # Install Python dependencies
-pip3 install opencv-python numpy opencv-contrib-python
+pip3 install opencv-python numpy opencv-contrib-python torch torchvision transformers
 
 # Install ROS 2 packages
 sudo apt install ros-humble-cv-bridge ros-humble-image-transport
 ```
 
-### 2. Build the Workspace
+### Build and Run
 
 ```bash
 # Source ROS 2
@@ -113,25 +171,20 @@ colcon build --packages-select ros2_image_processor
 
 # Source the workspace
 source install/setup.bash
-```
 
-### 3. Run the Application
-
-```bash
 # Terminal 1: Launch the image processor
 ros2 launch ros2_image_processor image_processor.launch.py
 
-# Terminal 2: Play the bag file (if not using launch file)
+# Terminal 2: Play the bag file
 ros2 bag play rosbag2_2025_06_16-15_16_29
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-study_0254/
+DFL_fin/
 ├── src/ros2_image_processor/
 │   ├── ros2_image_processor/
-│   │   ├── __init__.py
 │   │   ├── image_processor_node.py
 │   │   ├── seg.py
 │   │   └── stitching_utils.py
@@ -143,8 +196,6 @@ study_0254/
 │   └── CMakeLists.txt
 ├── rosbag2_2025_06_16-15_16_29/
 ├── visualization_output/
-│   ├── stitched/
-│   └── segmented/
 ├── start_gpu.sh
 ├── start_cpu.sh
 ├── download_rosbag.sh
@@ -152,15 +203,10 @@ study_0254/
 ├── Dockerfile
 ├── docker-compose-gpu.yml
 ├── docker-compose-cpu.yml
-├── requirements.txt
-├── QUICK_START.md
-├── README.md
-└── IMPLEMENTATION_SUMMARY.md
+└── requirements.txt
 ```
 
-## 🎮 Usage
-
-### Topics
+## Topics
 
 **Subscribed Topics:**
 - `/realsense/left/color/image_raw_throttle` (sensor_msgs/Image): Left camera stream
@@ -170,74 +216,46 @@ study_0254/
 - `/processed_image` (sensor_msgs/Image): Stitched image
 - `/segmented_image` (sensor_msgs/Image): Segmented image with overlays
 
-### Parameters
+## Semantic Segmentation
 
-- `left_camera_topic`: Topic name for left camera (default: `/realsense/right/color/image_raw_throttle`)
-- `right_camera_topic`: Topic name for right camera (default: `/realsense/left/color/image_raw_throttle`)
-- `processed_image_topic`: Topic name for processed image (default: `/processed_image`)
-- `segmented_image_topic`: Topic name for segmented image (default: `/segmented_image`)
-
-### Launch Arguments
-
-- `bag_file`: Path to the ROS bag file (default: `rosbag2_2025_06_16-15_16_29`)
-
-## 🔍 Semantic Segmentation Details
-
-### Model Information
 - **Model**: Mask2Former (facebook/mask2former-swin-tiny-cityscapes-semantic)
-- **Framework**: PyTorch with Hugging Face Transformers
 - **Classes**: 19 Cityscapes classes (road, building, car, person, etc.)
-- **Input**: RGB images
-- **Output**: Pixel-level class segmentation
+- **Performance**: ~10x faster with GPU acceleration
+- **Memory**: ~2GB GPU memory for model
 
-### Processing Pipeline
-- **Image Preprocessing**: BGR to RGB conversion, PIL transformation
-- **Model Inference**: GPU-accelerated with CUDA support
-- **Post-processing**: Official Mask2Former post-processing
-- **Color Mapping**: BGR color scheme for visualization
-
-### Performance
-- **GPU Processing**: ~10x faster than CPU
-- **Memory Usage**: ~2GB GPU memory for model
-- **Processing Rate**: High FPS with GPU acceleration
-
-## 🎨 Visualization Features
-
-- **Semantic Segmentation**: Pixel-level classification with color coding
-- **Class Colors**: BGR color scheme (car: blue, person: red, road: purple, etc.)
-- **Overlay Visualization**: Semi-transparent segmentation overlay on original images
-- **Real-time Processing**: High FPS with GPU acceleration
-- **Image Saving**: Automatic saving of both stitched and segmented images
-
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
-1. **Bag File Download Issues**
-   - The bag file will be downloaded automatically if missing when you run the start scripts.
-   - You can also run `./download_rosbag.sh` manually.
-   - Check your internet connection and available disk space (~4GB required).
-   - If the download fails, re-run the script or check for error messages.
+1. **Permission Denied Errors**
+   ```bash
+   chmod +x *.sh
+   ```
 
-2. **Mask2Former Model Download Issues**
-   - The model will be downloaded automatically on first run
-   - Check internet connection for Hugging Face model download
-   - Verify sufficient disk space (~2GB for model)
+2. **Bag File Download Issues**
+   - Check internet connection and disk space (~4GB required)
+   - Run `./download_rosbag.sh` manually if automatic download fails
+   - Ensure curl and unzip are installed: `sudo apt install curl unzip`
 
-3. **GPU Memory Issues**
+3. **Docker Build Failures**
+   - Check Docker is running: `sudo systemctl start docker`
+   - Ensure you have sufficient disk space
+   - Try building without cache: `docker build --no-cache -t ...`
+
+4. **Mask2Former Model Download Issues**
+   - Model downloads automatically on first run (~2GB)
+   - Check internet connection and disk space
+   - First run may take 5-10 minutes to download model
+
+5. **GPU Memory Issues**
    - Ensure sufficient GPU memory (minimum 4GB recommended)
    - Use CPU version if GPU memory is insufficient
-   - Check CUDA installation and compatibility
+   - Check CUDA installation: `nvidia-smi`
 
-4. **No Images Displayed**
-   - Verify the bag file contains the expected topics
-   - Check topic names match the expected format
+6. **No Images Displayed**
+   - Verify bag file contains expected topics
    - Use `ros2 topic list` to see available topics
-
-5. **Docker GPU Issues**
-   - Ensure NVIDIA Docker runtime is installed
-   - Check GPU availability with `nvidia-smi`
-   - Use CPU version as fallback
+   - Check if node is running: `ros2 node list`
 
 ### Debug Commands
 
@@ -245,30 +263,43 @@ study_0254/
 # List available topics
 ros2 topic list
 
-# Check topic info
-ros2 topic info /realsense/left/color/image_raw_throttle
-
-# Monitor topic messages
-ros2 topic echo /processed_image
-ros2 topic echo /segmented_image
-
 # Check node status
 ros2 node list
 ros2 node info /image_processor_node
 
 # Check GPU status (in container)
-nvidia-smi
+docker exec ros2_image_processor nvidia-smi
+
+# View container logs
+docker logs ros2_image_processor
+
+# Check if bag file is valid
+ros2 bag info rosbag2_2025_06_16-15_16_29
 ```
 
-## 📊 Performance Considerations
+### Expected Output Files
 
-- Processing rate: High FPS with GPU acceleration
-- Memory usage: ~2GB GPU memory for model
-- CPU usage: Low with GPU acceleration
-- GPU acceleration: Fully implemented with CUDA support
-- Model loading: ~30 seconds on first run
+After successful execution, you should see:
+```
+visualization_output/
+├── stitched/
+│   ├── processed_image_20250101_120000_0001.jpg
+│   ├── processed_image_20250101_120000_0002.jpg
+│   └── ...
+└── segmented/
+    ├── segmented_image_20250101_120000_0001.jpg
+    ├── segmented_image_20250101_120000_0002.jpg
+    └── ...
+```
 
-## 🔮 Future Improvements
+## Performance
+
+- **Processing Rate**: High FPS with GPU acceleration
+- **Memory Usage**: ~2GB GPU memory for model
+- **Model Loading**: ~30 seconds on first run
+- **Total Processing Time**: ~10-15 minutes for full bag file
+
+## Future Improvements
 
 - Multi-object tracking algorithms (SORT, DeepSORT)
 - Instance segmentation for individual object identification
@@ -276,16 +307,7 @@ nvidia-smi
 - Configurable segmentation parameters
 - Recording processed videos
 - Real-time performance optimization
-- Support for different segmentation models
 
-## 📝 License
+## License
 
-This project is licensed under the Apache License 2.0.
-
-## 🤝 Contributing
-
-Feel free to submit issues and enhancement requests!
-
----
-
-**Note**: This implementation focuses on semantic segmentation using Mask2Former as the primary processing task. The code structure is modular and can be easily extended to implement object tracking, instance segmentation, or depth estimation as alternative processing options. 
+This project is licensed under the Apache License 2.0. 
