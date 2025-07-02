@@ -308,6 +308,18 @@ visualization_output/
 - Recording processed videos
 - Real-time performance optimization
 
+## Technical Decisions
+
+For detailed explanations of the technical decisions and implementation rationale, see [TECHNICAL_DECISIONS.md](TECHNICAL_DECISIONS.md).
+
+This document covers:
+- Why semantic segmentation was chosen over object tracking or depth estimation
+- Image stitching method selection and implementation
+- Threading model and concurrency handling
+- Docker architecture decisions
+- Performance optimization strategies
+- Error handling and robustness considerations
+
 ## License
 
 This project is licensed under the Apache License 2.0. 
