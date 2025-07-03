@@ -70,7 +70,7 @@ When using Docker Compose, you need to manually start the ROS bag playback in a 
 docker-compose -f docker-compose-gpu.yml up --build
 
 # Terminal 2: Start ROS bag playback
-docker exec ros2_image_processor bash -c "source /opt/ros/humble/setup.bash && ros2 bag play /ros2_ws/rosbag2_2025_06_16-15_16_29 --rate 2.0"
+docker exec ros2_image_processor bash -c "source /opt/ros/humble/setup.bash && ros2 bag play /ros2_ws/rosbag2_2025_06_16-15_16_29 --rate 1.0"
 ```
 
 **Alternative: Use Start Scripts**
