@@ -274,7 +274,7 @@ DFL_fin/
 - **Model**: Mask2Former (facebook/mask2former-swin-tiny-cityscapes-semantic)
 - **Classes**: 19 Cityscapes classes (road, building, car, person, etc.)
 - **Performance**: ~10x faster with GPU acceleration
-- **Memory**: ~2GB GPU memory for model
+- **Memory**: ~190MB GPU memory for model
 
 ## Troubleshooting
 
@@ -304,7 +304,7 @@ DFL_fin/
    - Try building without cache: `docker build --no-cache -t ...`
 
 4. **Mask2Former Model Download Issues**
-   - Model downloads automatically on first run (~2GB)
+   - Model downloads automatically on first run (~190MB)
    - Check internet connection and disk space
    - First run may take 5-10 minutes to download model
 
@@ -375,7 +375,7 @@ Both CPU and GPU versions now include automatic completion detection:
 | Version | CPU Usage | Memory Usage | GPU Memory | Model Loading Time |
 |---------|-----------|--------------|------------|-------------------|
 | **CPU** | 80-90% | ~4GB RAM | N/A | ~30 seconds |
-| **GPU** | 20-30% | ~2GB RAM | ~2GB VRAM | ~30 seconds |
+| **GPU** | 20-30% | ~190MB RAM | ~190MB VRAM | ~30 seconds |
 
 ### Performance Characteristics
 
