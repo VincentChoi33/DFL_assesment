@@ -285,6 +285,14 @@ DFL_fin/
    chmod +x *.sh
    ```
 
+2. **Directory Permission Issues**
+   If you encounter "Permission denied" errors when creating directories:
+   ```bash
+   # Set proper permissions for output directories
+   mkdir -p visualization_output/stitched visualization_output/segmented visualization_output/videos
+   chmod -R 777 visualization_output
+   ```
+
 2. **Bag File Download Issues**
    - Check internet connection and disk space (~4GB required)
    - Run `./download_rosbag.sh` manually if automatic download fails

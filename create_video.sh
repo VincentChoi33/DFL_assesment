@@ -52,8 +52,9 @@ if [ ! -d "visualization_output/stitched" ] || [ -z "$(ls -A visualization_outpu
     exit 1
 fi
 
-# Create videos directory
+# Create videos directory with proper permissions
 mkdir -p visualization_output/videos
+chmod 777 visualization_output/videos
 echo "Created videos directory: visualization_output/videos/"
 
 # Function to create video from images

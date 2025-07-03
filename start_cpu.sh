@@ -80,6 +80,11 @@ echo "Container environment ready"
 
 # Step 3: Start Docker container
 echo "Step 3: Starting Docker container..."
+
+# Create and set permissions for output directories
+mkdir -p visualization_output/stitched visualization_output/segmented visualization_output/videos
+chmod -R 777 visualization_output
+
 docker run --rm -d --name ros2_image_processor \
     -v $PWD/rosbag2_2025_06_16-15_16_29:/ros2_ws/rosbag2_2025_06_16-15_16_29:ro \
     -v $PWD/visualization_output:/ros2_ws/visualization_output:rw \

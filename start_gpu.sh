@@ -80,6 +80,11 @@ echo "Container environment ready"
 
 # Step 3: Start Docker container with GPU support
 echo "Step 3: Starting Docker container with GPU support..."
+
+# Create and set permissions for output directories
+mkdir -p visualization_output/stitched visualization_output/segmented visualization_output/videos
+chmod -R 777 visualization_output
+
 docker run --rm -d --name ros2_image_processor \
     --gpus all \
     -v $PWD/rosbag2_2025_06_16-15_16_29:/ros2_ws/rosbag2_2025_06_16-15_16_29:ro \
