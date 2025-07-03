@@ -59,7 +59,7 @@ fi
 
 # Step 1: Build Docker image with CUDA support
 echo "Step 1: Building Docker image with CUDA support..."
-docker build -t study_0702-ros2_image_processor:gpu -f Dockerfile.gpu .
+docker build -t ros2_image_processor:gpu -f Dockerfile.gpu .
 
 if [ $? -eq 0 ]; then
     echo "Docker image built successfully"
@@ -90,7 +90,7 @@ docker run --rm -d --name ros2_image_processor \
     -v $PWD/rosbag2_2025_06_16-15_16_29:/ros2_ws/rosbag2_2025_06_16-15_16_29:ro \
     -v $PWD/visualization_output:/ros2_ws/visualization_output:rw \
     -v $PWD/homography_matrix.npy:/ros2_ws/homography_matrix.npy:ro \
-    study_0702-ros2_image_processor:gpu tail -f /dev/null
+    ros2_image_processor:gpu tail -f /dev/null
 
 if [ $? -eq 0 ]; then
     echo "Container started successfully with GPU support"
