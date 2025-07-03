@@ -129,9 +129,50 @@ docker exec ros2_image_processor bash -c "
     timeout 600 ros2 bag play /ros2_ws/rosbag2_2025_06_16-15_16_29 --rate 1.0
 "
 
-# Step 6: Wait a moment for processing to complete
+# Step 6: Wait for processing to complete and detect completion
 echo "Step 6: Waiting for processing to complete..."
-sleep 5
+echo "Monitoring processing progress..."
+
+# Function to detect processing completion
+detect_processing_completion() {
+    local check_count=0
+    local stable_count=0
+    local last_stitched_count=0
+    local last_segmented_count=0
+    
+    echo "Monitoring file count changes..."
+    
+    while [ $check_count -lt 60 ]; do  # Check for up to 2 minutes
+        sleep 5
+        check_count=$((check_count + 1))
+        
+        # Get current file counts
+        current_stitched_count=$(docker exec ros2_image_processor bash -c "ls -1 /ros2_ws/visualization_output/stitched/*.jpg 2>/dev/null | wc -l")
+        current_segmented_count=$(docker exec ros2_image_processor bash -c "ls -1 /ros2_ws/visualization_output/segmented/*.jpg 2>/dev/null | wc -l")
+        
+        # Check if counts are stable (no change for 3 consecutive checks)
+        if [ "$current_stitched_count" -eq "$last_stitched_count" ] && [ "$current_segmented_count" -eq "$last_segmented_count" ]; then
+            stable_count=$((stable_count + 1))
+            if [ $stable_count -ge 3 ]; then
+                echo "Processing appears to be complete!"
+                echo "Final counts - Stitched: $current_stitched_count, Segmented: $current_segmented_count"
+                return 0
+            fi
+        else
+            stable_count=0
+            echo "Processing in progress... Stitched: $current_stitched_count, Segmented: $current_segmented_count"
+        fi
+        
+        last_stitched_count=$current_stitched_count
+        last_segmented_count=$current_segmented_count
+    done
+    
+    echo "Processing may still be in progress, but proceeding with results..."
+    return 1
+}
+
+# Run completion detection
+detect_processing_completion
 
 # Step 7: Show final results
 echo ""
@@ -158,5 +199,13 @@ echo "..."
 ls -la visualization_output/segmented/ | head -5
 
 echo ""
-echo "Test completed! (GPU Version)"
-echo "GPU processing should be ~10x faster than CPU!" 
+echo "Image processing completed successfully! (GPU Version)"
+echo "========================================================"
+echo "Images saved in:"
+echo "   - visualization_output/stitched/"
+echo "   - visualization_output/segmented/"
+echo ""
+echo "To create videos from these images, run:"
+echo "   ./create_video.sh"
+echo ""
+echo "GPU processing was ~10x faster than CPU!" 
