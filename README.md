@@ -76,12 +76,18 @@ docker-compose -f docker-compose-gpu.yml up --build
 docker exec ros2_image_processor bash -c "source /opt/ros/humble/setup.bash && ros2 bag play /ros2_ws/rosbag2_2025_06_16-15_16_29 --rate 1.0"
 ```
 
-**Alternative: Use Start Scripts**
-If you prefer automatic rosbag playback, use the start scripts instead:
+**Alternative: Use Start Scripts (Recommended)**
+The start scripts provide automatic rosbag playback with proper cleanup:
 ```bash
-./start_gpu.sh    # GPU version with auto rosbag playback
-./start_cpu.sh    # CPU version with auto rosbag playback
+./start_gpu.sh    # GPU version with auto rosbag playback and cleanup
+./start_cpu.sh    # CPU version with auto rosbag playback and cleanup
 ```
+
+**Key Features of Start Scripts:**
+- **Automatic Cleanup**: Stops container and ROS bag processes when complete
+- **Signal Handling**: Graceful shutdown with Ctrl+C
+- **Process Monitoring**: Tracks ROS bag PID for proper termination
+- **Completion Detection**: Automatically detects when processing is finished
 
 ### Option 2: Start Scripts
 

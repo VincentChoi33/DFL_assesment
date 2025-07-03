@@ -3,6 +3,34 @@
 # ROS 2 Image Processor Test Script
 # Starts all necessary components in sequence
 
+# Global variables for cleanup
+BAG_PID=""
+CONTAINER_NAME="ros2_image_processor"
+
+# Signal handler for graceful shutdown
+cleanup_on_exit() {
+    echo ""
+    echo "🛑 Received interrupt signal. Cleaning up..."
+    
+    # Kill ROS bag process if running
+    if [ ! -z "$BAG_PID" ]; then
+        echo "Stopping ROS bag playback (PID: $BAG_PID)..."
+        docker exec $CONTAINER_NAME bash -c "pkill -f 'ros2 bag play'" 2>/dev/null || true
+    fi
+    
+    # Stop container if running
+    if docker ps --format "table {{.Names}}" | grep -q "^$CONTAINER_NAME$"; then
+        echo "Stopping container..."
+        docker stop $CONTAINER_NAME 2>/dev/null || true
+    fi
+    
+    echo "Cleanup completed. Exiting."
+    exit 0
+}
+
+# Set up signal handlers
+trap cleanup_on_exit SIGINT SIGTERM
+
 # Function to safely cleanup containers
 cleanup_containers() {
     echo "🧹 Performing container cleanup..."
@@ -10,6 +38,8 @@ cleanup_containers() {
     # Stop and remove the main container if it exists
     if docker ps -a --format "table {{.Names}}" | grep -q "^ros2_image_processor$"; then
         echo "Found existing container 'ros2_image_processor'. Stopping and removing..."
+        # Kill any ROS bag processes first
+        docker exec ros2_image_processor bash -c "pkill -f 'ros2 bag play'" 2>/dev/null || true
         docker stop ros2_image_processor 2>/dev/null || true
         docker rm ros2_image_processor 2>/dev/null || true
         echo "Existing container cleaned up"
@@ -131,7 +161,10 @@ echo "Step 7: Starting ROS bag playback with controlled rate..."
 docker exec ros2_image_processor bash -c "
     source /opt/ros/humble/setup.bash && 
     timeout 600 ros2 bag play /ros2_ws/rosbag2_2025_06_16-15_16_29 --rate 1.0
-"
+" &
+BAG_PID=$!
+
+echo "ROS bag playback started with PID: $BAG_PID"
 
 # Step 8: Wait for processing to complete and detect completion
 echo "Step 8: Waiting for processing to complete..."
@@ -178,22 +211,23 @@ detect_processing_completion() {
 # Run completion detection
 detect_processing_completion
 
-# Step 9: Show final results
+# Step 9: Stop the container and show final results
+echo ""
+echo "Step 9: Stopping container and showing final results..."
+
+# Kill ROS bag process if still running
+if [ ! -z "$BAG_PID" ]; then
+    echo "Stopping ROS bag playback (PID: $BAG_PID)..."
+    docker exec ros2_image_processor bash -c "pkill -f 'ros2 bag play'" 2>/dev/null || true
+fi
+
+# Stop the container to prevent continuous bag playback
+echo "Stopping container to prevent continuous bag playback..."
+docker stop ros2_image_processor
+
 echo ""
 echo "Final Results:"
 echo "=================="
-
-# Check ROS topics
-echo "Active ROS topics:"
-docker exec ros2_image_processor bash -c "
-    source /opt/ros/humble/setup.bash && 
-    timeout 5 ros2 topic list
-"
-
-# Show final logs
-echo ""
-echo "Final node logs:"
-docker exec ros2_image_processor tail -n 30 /tmp/node.log
 
 # Check output files
 echo ""
@@ -212,4 +246,6 @@ echo ""
 echo "To create videos from these images, run:"
 echo "   ./create_video.sh"
 echo ""
-echo "Note: If you have a GPU, you can use ./start_gpu.sh for faster processing." 
+echo "Note: If you have a GPU, you can use ./start_gpu.sh for faster processing."
+echo ""
+echo "Container has been stopped to prevent continuous bag playback." 
