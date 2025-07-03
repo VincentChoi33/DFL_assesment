@@ -10,6 +10,9 @@ This project implements a ROS 2 node that processes dual camera streams from Int
 - **GPU Acceleration**: Supports CUDA for faster processing
 - **Real-time Processing**: Processes and publishes results at high FPS
 - **Image Saving**: Automatically saves processed and segmented images
+- **Video Creation**: Converts processed images to MP4 videos
+- **Processing Completion Detection**: Automatically detects when processing is complete
+- **Enhanced Container Management**: Smart cleanup and conflict prevention
 
 ## Prerequisites
 
@@ -129,6 +132,8 @@ The process will take several minutes to complete. You'll see logs showing:
 - Image processing progress
 - Segmentation results
 - File saving operations
+- **Processing completion detection**: Automatic monitoring of file count changes
+- **Real-time progress updates**: Live count of processed images
 
 ### View Results
 
@@ -155,6 +160,29 @@ ls -la visualization_output/segmented/
 Images are saved to:
 - `visualization_output/stitched/`: Stitched images
 - `visualization_output/segmented/`: Segmented images with overlays
+
+## Video Creation
+
+After image processing is complete, you can create MP4 videos from the saved images:
+
+```bash
+# Create videos from processed images
+./create_video.sh
+```
+
+This script will create:
+- `visualization_output/videos/stitched_video.mp4`: Stitched image sequence
+- `visualization_output/videos/segmented_video.mp4`: Segmented image sequence  
+- `visualization_output/videos/comparison_video.mp4`: Side-by-side comparison
+
+**Video Settings:**
+- **FPS**: 11.65 (147 seconds for 1712 images)
+- **Format**: MP4 with H.264 encoding
+- **Quality**: High quality with reasonable file size
+
+**Requirements:**
+- Docker container must be running
+- ffmpeg will be automatically installed in the container if needed
 
 ## Manual Setup (Without Docker)
 
@@ -214,14 +242,21 @@ DFL_fin/
 │   └── CMakeLists.txt
 ├── rosbag2_2025_06_16-15_16_29/
 ├── visualization_output/
-├── start_gpu.sh
-├── start_cpu.sh
-├── download_rosbag.sh
+│   ├── stitched/          # Stitched images
+│   ├── segmented/         # Segmented images
+│   └── videos/           # Generated MP4 videos
+├── start_gpu.sh          # GPU version with auto-completion detection
+├── start_cpu.sh          # CPU version with auto-completion detection
+├── create_video.sh       # Video creation script
+├── download_rosbag.sh    # Data download script
 ├── Dockerfile.gpu
 ├── Dockerfile
 ├── docker-compose-gpu.yml
 ├── docker-compose-cpu.yml
-└── requirements.txt
+├── requirements.txt
+├── README.md
+├── QUICK_START.md
+└── TECHNICAL_DECISIONS.md
 ```
 
 ## Topics
@@ -319,6 +354,14 @@ visualization_output/
 | **CPU** | ~15-20 FPS | ~2-3 FPS | ~2-3 FPS | Limited by CPU computation |
 | **GPU** | ~15-20 FPS | ~25-30 FPS | ~15-20 FPS | GPU-accelerated segmentation |
 
+### Processing Completion Detection
+
+Both CPU and GPU versions now include automatic completion detection:
+- **Real-time monitoring**: Tracks file count changes every 5 seconds
+- **Stability check**: Confirms completion after 3 consecutive stable readings
+- **Maximum wait time**: 2 minutes before proceeding
+- **Progress display**: Shows live counts of processed images
+
 ### Resource Usage
 
 | Version | CPU Usage | Memory Usage | GPU Memory | Model Loading Time |
@@ -329,14 +372,14 @@ visualization_output/
 ### Performance Characteristics
 
 **CPU Version:**
-- ✅ **Pros**: No GPU required, works on any system
-- ❌ **Cons**: Slow segmentation (~2-3 FPS), high CPU usage
-- 🎯 **Best for**: Development, testing, systems without GPU
+- **Pros**: No GPU required, works on any system
+- **Cons**: Slow segmentation (~2-3 FPS), high CPU usage
+- **Best for**: Development, testing, systems without GPU
 
 **GPU Version:**
-- ✅ **Pros**: Fast segmentation (~25-30 FPS), low CPU usage
-- ❌ **Cons**: Requires NVIDIA GPU with CUDA
-- 🎯 **Best for**: Production, real-time applications
+- **Pros**: Fast segmentation (~25-30 FPS), low CPU usage
+- **Cons**: Requires NVIDIA GPU with CUDA
+- **Best for**: Production, real-time applications
 
 ### Real-world Performance
 
@@ -355,6 +398,8 @@ The system uses several optimization techniques:
 - **Thread-safe image buffers**: Concurrent processing of left/right camera streams
 - **Automatic memory cleanup**: Prevents memory leaks during long sessions
 - **Lazy model loading**: Only loads segmentation model when enabled
+- **Smart container management**: Automatic cleanup of conflicting containers
+- **Processing completion detection**: Prevents premature termination
 
 ## Future Improvements
 
@@ -362,8 +407,10 @@ The system uses several optimization techniques:
 - Instance segmentation for individual object identification
 - Depth estimation from stereo cameras
 - Configurable segmentation parameters
-- Recording processed videos
 - Real-time performance optimization
+- **Video streaming**: Real-time video output during processing
+- **Batch processing**: Support for multiple rosbag files
+- **Custom video formats**: Support for different video codecs and resolutions
 
 ## Technical Decisions
 
