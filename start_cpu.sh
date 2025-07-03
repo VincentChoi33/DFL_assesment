@@ -125,7 +125,7 @@ echo ""
 echo "Step 7: Starting ROS bag playback with controlled rate..."
 docker exec ros2_image_processor bash -c "
     source /opt/ros/humble/setup.bash && 
-    timeout 600 ros2 bag play /ros2_ws/rosbag2_2025_06_16-15_16_29 --rate 2.0
+    timeout 600 ros2 bag play /ros2_ws/rosbag2_2025_06_16-15_16_29 --rate 1.0
 "
 
 # Step 8: Wait a moment for processing to complete
