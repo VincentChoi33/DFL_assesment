@@ -124,10 +124,10 @@ After execution, the following files will be generated:
 ## ⚡ Performance Comparison
 
 ### Processing Speed
-| Version | Stitching FPS | Segmentation FPS | Total FPS | Processing Time (10min bag) |
-|---------|---------------|------------------|-----------|----------------------------|
-| **CPU** | ~15-20 | ~2-3 | ~2-3 | ~45-60 minutes |
-| **GPU** | ~15-20 | ~25-30 | ~15-20 | ~15-20 minutes |
+| Version | Stitching FPS | Segmentation FPS | Total FPS | Processing Time (2min 27s bag) | Success Rate |
+|---------|---------------|------------------|-----------|----------------------------|--------------|
+| **CPU** | ~15-20 | ~2-3 | ~2-3 | ~10-15 minutes | Varies by CPU |
+| **RTX 3090** | ~15-20 | ~25-30 | ~15-20 | ~3-5 minutes | ~1500/1712 pairs (~87.6%) |
 
 ### Resource Usage
 | Version | CPU Usage | RAM Usage | GPU Memory | Best For |

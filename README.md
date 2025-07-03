@@ -391,9 +391,14 @@ Both CPU and GPU versions now include automatic completion detection:
 
 ### Real-world Performance
 
-**Processing the full rosbag2 file (~10 minutes of data):**
-- **CPU**: ~45-60 minutes total processing time
-- **GPU**: ~15-20 minutes total processing time
+**Processing the full rosbag2 file (2 minutes 27 seconds of data, 1712 image pairs):**
+- **RTX 3090 (GPU)**: ~1500 pairs processed out of 1712 total pairs (~87.6% success rate)
+- **CPU**: Processing time and success rate vary significantly based on CPU performance
+
+**Success Rate Analysis:**
+- **GPU Version**: Higher success rate due to faster processing, reducing buffer overflow
+- **CPU Version**: Lower success rate due to slower processing, leading to more dropped frames
+- **Buffer Management**: Both versions use 100-frame buffers with automatic cleanup
 
 **Real-time processing capability:**
 - **CPU**: Not suitable for real-time (2-3 FPS)
