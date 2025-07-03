@@ -10,7 +10,7 @@ CONTAINER_NAME="ros2_image_processor"
 # Signal handler for graceful shutdown
 cleanup_on_exit() {
     echo ""
-    echo "🛑 Received interrupt signal. Cleaning up..."
+    echo "Received interrupt signal. Cleaning up..."
     
     # Kill ROS bag process if running
     if [ ! -z "$BAG_PID" ]; then
@@ -33,7 +33,7 @@ trap cleanup_on_exit SIGINT SIGTERM
 
 # Function to safely cleanup containers
 cleanup_containers() {
-    echo "🧹 Performing container cleanup..."
+    echo "Performing container cleanup..."
     
     # Stop and remove the main container if it exists
     if docker ps -a --format "table {{.Names}}" | grep -q "^ros2_image_processor$"; then
@@ -48,7 +48,7 @@ cleanup_containers() {
     fi
     
     # Check for any other potentially conflicting containers
-    echo "🔍 Checking for other potentially conflicting containers..."
+    echo "Checking for other potentially conflicting containers..."
     conflicting_containers=$(docker ps -a --format "table {{.Names}}" | grep -E "(ros2|image_processor)" | grep -v "NAMES" | grep -v "^ros2_image_processor$" || true)
     
     if [ ! -z "$conflicting_containers" ]; then

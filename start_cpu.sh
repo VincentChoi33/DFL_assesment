@@ -10,7 +10,7 @@ CONTAINER_NAME="ros2_image_processor"
 # Signal handler for graceful shutdown
 cleanup_on_exit() {
     echo ""
-    echo "🛑 Received interrupt signal. Cleaning up..."
+    echo "Received interrupt signal. Cleaning up..."
     
     # Kill ROS bag process if running
     if [ ! -z "$BAG_PID" ]; then
@@ -33,7 +33,7 @@ trap cleanup_on_exit SIGINT SIGTERM
 
 # Function to safely cleanup containers
 cleanup_containers() {
-    echo "🧹 Performing container cleanup..."
+    echo "Performing container cleanup..."
     
     # Stop and remove the main container if it exists
     if docker ps -a --format "table {{.Names}}" | grep -q "^ros2_image_processor$"; then
@@ -197,7 +197,7 @@ detect_processing_completion() {
             fi
         else
             stable_count=0
-            echo "⏳ Processing in progress... Stitched: $current_stitched_count, Segmented: $current_segmented_count"
+            echo "Processing in progress... Stitched: $current_stitched_count, Segmented: $current_segmented_count"
         fi
         
         last_stitched_count=$current_stitched_count
