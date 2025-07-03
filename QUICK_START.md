@@ -31,15 +31,23 @@ chmod +x start_cpu.sh
 
 ### Method 1: GPU Version with Docker Compose (Recommended)
 ```bash
-# Start with GPU support using docker-compose
+# Terminal 1: Start with GPU support using docker-compose
 docker-compose -f docker-compose-gpu.yml up --build
+
+# Terminal 2: Start ROS bag playback (required!)
+docker exec ros2_image_processor bash -c "source /opt/ros/humble/setup.bash && ros2 bag play /ros2_ws/rosbag2_2025_06_16-15_16_29 --rate 1.0"
 ```
 
 ### Method 2: CPU Version with Docker Compose
 ```bash
-# Start with CPU only using docker-compose
+# Terminal 1: Start with CPU only using docker-compose
 docker-compose -f docker-compose-cpu.yml up --build
+
+# Terminal 2: Start ROS bag playback (required!)
+docker exec ros2_image_processor bash -c "source /opt/ros/humble/setup.bash && ros2 bag play /ros2_ws/rosbag2_2025_06_16-15_16_29 --rate 1.0"
 ```
+
+**💡 Note**: Docker Compose requires manual rosbag playback. For automatic playback, use Methods 3-4 below.
 
 ### Method 3: GPU Version with Script
 ```bash

@@ -62,6 +62,24 @@ docker-compose -f docker-compose-gpu.yml up --build
 docker-compose -f docker-compose-cpu.yml up --build
 ```
 
+**Important Note for Docker Compose:**
+When using Docker Compose, you need to manually start the ROS bag playback in a separate terminal:
+
+```bash
+# Terminal 1: Start the container (already done above)
+docker-compose -f docker-compose-gpu.yml up --build
+
+# Terminal 2: Start ROS bag playback
+docker exec ros2_image_processor bash -c "source /opt/ros/humble/setup.bash && ros2 bag play /ros2_ws/rosbag2_2025_06_16-15_16_29 --rate 2.0"
+```
+
+**Alternative: Use Start Scripts**
+If you prefer automatic rosbag playback, use the start scripts instead:
+```bash
+./start_gpu.sh    # GPU version with auto rosbag playback
+./start_cpu.sh    # CPU version with auto rosbag playback
+```
+
 ### Option 2: Start Scripts
 
 **GPU Version (`start_gpu.sh`):**
