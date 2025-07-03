@@ -357,10 +357,10 @@ visualization_output/
 
 ### Processing Speed (FPS)
 
-| Version | Image Stitching | Semantic Segmentation | Total Processing | Notes |
-|---------|----------------|---------------------|------------------|-------|
-| **CPU** | ~15-20 FPS | ~2-3 FPS | ~2-3 FPS | Limited by CPU computation |
-| **GPU** | ~15-20 FPS | ~25-30 FPS | ~15-20 FPS | GPU-accelerated segmentation |
+| Version | Image Stitching | Semantic Segmentation | Total Processing | Processing Time (2min 27s bag) | Success Rate | Notes |
+|---------|----------------|---------------------|------------------|----------------------------|--------------|-------|
+| **CPU** | ~15-20 FPS | ~2-3 FPS | ~2-3 FPS | ~10-15 minutes | Varies by CPU | Limited by CPU computation |
+| **RTX 3090** | ~15-20 FPS | ~25-30 FPS | ~15-20 FPS | ~3-5 minutes | ~1500/1712 pairs (~87.6%) | GPU-accelerated segmentation |
 
 ### Processing Completion Detection
 
