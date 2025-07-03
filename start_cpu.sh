@@ -3,8 +3,45 @@
 # ROS 2 Image Processor Test Script
 # Starts all necessary components in sequence
 
+# Function to safely cleanup containers
+cleanup_containers() {
+    echo "🧹 Performing container cleanup..."
+    
+    # Stop and remove the main container if it exists
+    if docker ps -a --format "table {{.Names}}" | grep -q "^ros2_image_processor$"; then
+        echo "Found existing container 'ros2_image_processor'. Stopping and removing..."
+        docker stop ros2_image_processor 2>/dev/null || true
+        docker rm ros2_image_processor 2>/dev/null || true
+        echo "Existing container cleaned up"
+    else
+        echo "No existing container found"
+    fi
+    
+    # Check for any other potentially conflicting containers
+    echo "Checking for other potentially conflicting containers..."
+    conflicting_containers=$(docker ps -a --format "table {{.Names}}" | grep -E "(ros2|image_processor)" | grep -v "NAMES" | grep -v "^ros2_image_processor$" || true)
+    
+    if [ ! -z "$conflicting_containers" ]; then
+        echo "Found potentially conflicting containers:"
+        echo "$conflicting_containers"
+        echo "Consider stopping them manually if needed:"
+        echo "$conflicting_containers" | while read container; do
+            if [ ! -z "$container" ]; then
+                echo "   docker stop $container"
+            fi
+        done
+    else
+        echo "No conflicting containers found"
+    fi
+    
+    echo "Cleanup completed"
+}
+
 echo "Starting ROS 2 Image Processor Test..."
 echo "========================================"
+
+# Perform initial cleanup
+cleanup_containers
 
 # Step 0: Check and download rosbag2 if needed
 echo "Step 0: Checking for rosbag2 files..."
@@ -31,11 +68,15 @@ else
     exit 1
 fi
 
-# Step 2: Clean up any existing container
-echo "Step 2: Cleaning up any existing container..."
-docker stop ros2_image_processor 2>/dev/null || true
-docker rm ros2_image_processor 2>/dev/null || true
-echo "Cleanup completed"
+# Step 2: Final container cleanup check
+echo "Step 2: Final container cleanup check..."
+# Double-check that no conflicting container exists
+if docker ps --format "table {{.Names}}" | grep -q "^ros2_image_processor$"; then
+    echo "Warning: Container still running, forcing cleanup..."
+    docker stop ros2_image_processor 2>/dev/null || true
+    docker rm ros2_image_processor 2>/dev/null || true
+fi
+echo "Container environment ready"
 
 # Step 3: Start Docker container
 echo "Step 3: Starting Docker container..."
