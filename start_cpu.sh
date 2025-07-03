@@ -22,7 +22,7 @@ fi
 
 # Step 1: Build Docker image (to reflect any code changes)
 echo "Step 1: Building Docker image to reflect code changes..."
-docker build -t DFL_image_processor .
+docker build -t dfl_image_processor .
 
 if [ $? -eq 0 ]; then
     echo "Docker image built successfully"
@@ -43,7 +43,7 @@ docker run --rm -d --name ros2_image_processor \
     -v $PWD/rosbag2_2025_06_16-15_16_29:/ros2_ws/rosbag2_2025_06_16-15_16_29:ro \
     -v $PWD/visualization_output:/ros2_ws/visualization_output:rw \
     -v $PWD/homography_matrix.npy:/ros2_ws/homography_matrix.npy:ro \
-    study_0702-ros2_image_processor tail -f /dev/null
+    dfl_image_processor tail -f /dev/null
 
 if [ $? -eq 0 ]; then
     echo "Container started successfully"
