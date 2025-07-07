@@ -261,8 +261,7 @@ DFL_fin/
 ├── docker-compose-cpu.yml
 ├── requirements.txt
 ├── README.md
-├── QUICK_START.md
-└── TECHNICAL_DECISIONS.md
+└── QUICK_START.md
 ```
 
 ## Topics
@@ -433,9 +432,9 @@ The system uses several optimization techniques:
 
 ## Technical Decisions
 
-For detailed explanations of the technical decisions and implementation rationale, see [TECHNICAL_DECISIONS.md](TECHNICAL_DECISIONS.md).
+For detailed explanations of the technical decisions and implementation rationale, please refer to the technical report that was attached via email.
 
-This document covers:
+The report covers:
 - Why semantic segmentation was chosen over object tracking or depth estimation
 - Image stitching method selection and implementation
 - Threading model and concurrency handling
